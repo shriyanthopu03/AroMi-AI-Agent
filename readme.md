@@ -78,7 +78,6 @@ wellness/
 │
 ├── .gitignore
 ├── README.md
-└── NOTE.md
 ```
 
 ## ⚙️ Environment Configuration
@@ -101,16 +100,6 @@ The application uses separate environment configurations for its frontend and ba
 
 All sensitive environment variables are configured through the respective deployment platforms and excluded from the GitHub repository.
 
-## ☁️ Deployment
-
-The application runs as independently deployed frontend and backend services.
-
-- **Frontend:** React application hosted on a frontend hosting platform.
-- **Node.js Backend:** Express API deployed as a backend service.
-- **Python Backend:** FastAPI AI service deployed independently.
-- **Database:** MongoDB hosted database.
-
-The frontend communicates with the deployed backend APIs over HTTPS. The Express backend communicates with FastAPI whenever AI processing is required.
 
 ## 🔐 Security
 
