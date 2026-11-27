@@ -22,7 +22,7 @@ class AroMiAgent:
     def _call_groq_rest(self, prompt: str, model: str = None) -> str:
         try:
             # Groq implementation
-            api_model = model if model else "llama-3.3-70b-versatile"
+            api_model = model if model else "openai/gpt-oss-20b"
             url = "https://api.groq.com/openai/v1/chat/completions"
             headers = {
                 'Content-Type': 'application/json',
@@ -209,8 +209,7 @@ class AroMiAgent:
         """Clarifies any doubts with a helpful persona using a high-performance Groq model."""
         if self.use_ai:
             try:
-                # Switching to a supported high-performance model
-                model = "llama-3.3-70b-versatile"
+                model = "openai/gpt-oss-20b"
                 location_str = f"near {context.location}" if context.location else "in your vicinity"
                 prompt = f"""
                 You are AroMi, a highly specialized, empathetic, and scientifically-accurate AI Wellness Coach. 

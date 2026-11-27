@@ -41,6 +41,15 @@ An intelligent, AI-powered health and wellness coaching platform that provides p
 | API Communication | REST APIs |
 | Deployment | Vercel Services |
 
+## 🤖 AI Models
+
+| Capability | Model |
+|---|---|
+| Text generation (chat, recommendations, and doubt assistance) | `openai/gpt-oss-20b` |
+| Image recognition and prescription image reading | `meta-llama/llama-4-scout-17b-16e-instruct` |
+
+Prescription text reading is handled by the vision model; the application does not use a separate OCR model or OCR library.
+
 ## 🏗️ System Architecture
 
 ```text
