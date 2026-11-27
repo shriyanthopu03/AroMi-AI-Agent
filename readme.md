@@ -46,9 +46,9 @@ An intelligent, AI-powered health and wellness coaching platform that provides p
 | Capability | Model |
 |---|---|
 | Text generation (chat, recommendations, and doubt assistance) | `openai/gpt-oss-20b` |
-| Image recognition and prescription image reading | `meta-llama/llama-4-scout-17b-16e-instruct` |
+| Image recognition and prescription image reading (OCR) | `qwen/qwen3.8-27b` |
 
-Prescription text reading is handled by the vision model; the application does not use a separate OCR model or OCR library.
+Prescription text reading is handled by the vision model; the application does not use a separate OCR model or OCR library. Groq currently lists Qwen 3.8 27B as a preview model, so its availability may change.
 
 ## 🏗️ System Architecture
 

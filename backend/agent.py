@@ -265,7 +265,7 @@ class AroMiAgent:
                 """
                 
                 data = {
-                    "model": "meta-llama/llama-4-scout-17b-16e-instruct",
+                    "model": "qwen/qwen3.8-27b",
                     "messages": [
                         {
                             "role": "user",
@@ -275,7 +275,7 @@ class AroMiAgent:
                             ]
                         }
                     ],
-                    "max_tokens": 1024,
+                    "max_completion_tokens": 1024,
                     "temperature": 0.1
                 }
                 
@@ -324,27 +324,32 @@ class AroMiAgent:
                 """
                 
                 data = {
-                    "model": "meta-llama/llama-4-scout-17b-16e-instruct",
+                    "model": "qwen/qwen3.8-27b",
                     "messages": [
                         {
                             "role": "user",
                             "content": [
                                 {"type": "text", "text": prompt_text},
-                                {"type": "image_url", "image_url": {"url": image_data, "detail": "low"}}
+                                {"type": "image_url", "image_url": {"url": image_data}}
                             ]
                         }
                     ],
-                    "max_tokens": 800,
+                    "max_completion_tokens": 800,
                     "temperature": 0.1
                 }
                 
                 response = requests.post(url, headers=headers, json=data, timeout=30)
                 if response.status_code != 200:
-                    return f"AroMi is having trouble seeing the meal clearly right now. Please try again."
+                    error_detail = response.text[:300]
+                    print(f"Groq meal analysis error ({response.status_code}): {error_detail}")
+                    return f"Vision analysis error ({response.status_code}): {error_detail}"
 
                 return response.json()['choices'][0]['message']['content']
-                
-            except Exception as e:
-                return f"I'm sorry, I encountered an error while analyzing the image."
+            except requests.RequestException as e:
+                print(f"Groq meal analysis request failed: {e}")
+                return f"Vision analysis request failed: {str(e)[:200]}"
+            except (KeyError, TypeError, ValueError) as e:
+                print(f"Groq meal analysis returned an invalid response: {e}")
+                return f"Vision analysis returned an invalid response: {str(e)[:200]}"
         
         return "Groq Vision API is not configured."
