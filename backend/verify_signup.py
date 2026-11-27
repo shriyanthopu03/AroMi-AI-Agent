@@ -4,13 +4,25 @@ import json
 from motor.motor_asyncio import AsyncIOMotorClient
 import asyncio
 import os
+from pathlib import Path
 from dotenv import load_dotenv
 
-load_dotenv()
+load_dotenv(dotenv_path=Path(__file__).resolve().parents[1] / ".env")
 
 async def verify():
+    api_base_url = os.getenv("BASE_URL")
+    mongodb_uri = os.getenv("MONGO_URI")
+    if not api_base_url:
+        raise RuntimeError("Set BASE_URL to the deployed app origin in the repository environment.")
+    if not mongodb_uri:
+        raise RuntimeError("Set MONGO_URI in the repository environment.")
+
+    api_base_url = api_base_url.rstrip("/")
+    if not api_base_url.endswith("/api"):
+        api_base_url = f"{api_base_url}/api"
+
     # 1. Test POST /signup
-    url = "http://localhost:8000/signup"
+    url = f"{api_base_url}/signup"
     user_data = {
         "user_id": "nishi_test",
         "name": "Nishi",
@@ -52,7 +64,7 @@ async def verify():
     # 2. Test GET /user/{id}
     print(f"\n--- Verifying Retrieval ---")
     try:
-        get_response = requests.get(f"http://localhost:8000/user/{user_data['user_id']}")
+        get_response = requests.get(f"{api_base_url}/user/{user_data['user_id']}")
         print(f"GET Status: {get_response.status_code}")
         if get_response.status_code == 200:
             print("✓ User found via API")
@@ -63,7 +75,6 @@ async def verify():
 
     # 3. Deep check in MongoDB
     print(f"\n--- Checking Database Persistence ---")
-    mongodb_uri = os.getenv("MONGODB_URI", "mongodb://localhost:27017/aromi_db")
     client = AsyncIOMotorClient(mongodb_uri)
     db = client.get_database()
     col = db.get_collection("users")

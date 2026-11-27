@@ -33,72 +33,52 @@ An intelligent, AI-powered health and wellness coaching platform that provides p
 
 | Category | Technologies |
 |---|---|
-| Frontend | React.js, Vite |
+| Frontend | React, Vite |
 | Styling | Tailwind CSS |
-| Main Backend | Node.js, Express.js |
-| AI Backend | Python, FastAPI, Uvicorn |
+| Backend | Python, FastAPI, Uvicorn |
 | Database | MongoDB |
 | AI Integration | Groq API |
 | API Communication | REST APIs |
+| Deployment | Vercel Services |
 
 ## 🏗️ System Architecture
 
 ```text
-                 Users
+             React + Tailwind CSS
+                 (frontend)
                    |
+                 /api/*
                    v
-          React + Tailwind CSS
-                   |
-                   v
-            Express.js API
-                   |
-             +-----+-----+
-             |           |
-             v           v
-          MongoDB     FastAPI
-                       Python
-                         |
-                         v
-                     Groq API
-                         |
-                         v
-                  AI-generated Results
+             FastAPI (backend)
+              /           \
+         MongoDB         Groq API
 ```
 
 ## 📂 Project Structure
 
 ```text
-wellness/
+aromi-ai-agent/
 │
 ├── frontend/             # React + Tailwind CSS
 │
-├── backend-node/         # Node.js + Express backend
-│
 ├── backend/              # Python + FastAPI backend
 │
+├── vercel.json           # Services and request routing
 ├── .gitignore
-├── README.md
+├── readme.md
 ```
 
 ## ⚙️ Environment Configuration
 
-The application uses separate environment configurations for its frontend and backend services.
+Copy `.env.example` to `.env` for local configuration. The app uses `BASE_URL` for the deployed app/backend origin, `MONGO_URI` for the MongoDB connection, and `GROQ_API_KEY` for Groq AI access. The frontend adds `/api` to `BASE_URL`; the backend uses `BASE_URL` as its allowed CORS origin. Keep secrets in environment configuration and never commit `.env`.
 
-**Frontend**
-- API base URLs for deployed backend services.
+Vercel does not deploy the local `.env` file. Configure `MONGO_URI` and `GROQ_API_KEY` for the backend service, and `BASE_URL` for the frontend and backend services in Vercel's environment settings.
 
-**Node.js Backend**
-- MongoDB connection string.
-- Authentication secrets.
-- FastAPI service URL.
-- Production frontend origin for CORS.
+## Deploy as Vercel services
 
-**Python Backend**
-- Groq API key.
-- MongoDB connection string, if required by the implementation.
-- AI service configuration.
+Import the repository as a Vercel project from its root. The root `vercel.json` builds the `backend` and `frontend` services, routes `/api/*` to FastAPI, and sends all other paths to the Vite frontend. FastAPI routes use the `/api` prefix to match that routing.
 
-All sensitive environment variables are configured through the respective deployment platforms and excluded from the GitHub repository.
+Use `vercel dev` to run the services together locally. The static frontend calls the backend through the public same-origin `/api` rewrite, so no runtime binding is required. The backend connects to MongoDB and Groq as external dependencies, not Vercel services.
 
 
 ## 🔐 Security

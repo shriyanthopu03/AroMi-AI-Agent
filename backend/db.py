@@ -6,7 +6,12 @@ from typing import Optional
 import os
 from dotenv import load_dotenv
 
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+load_dotenv(
+    dotenv_path=os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        ".env",
+    )
+)
 
 class Database:
     client: Optional[AsyncIOMotorClient] = None
@@ -15,8 +20,9 @@ class Database:
     @classmethod
     async def connect_db(cls):
         """Connect to MongoDB"""
-        # Try both common names for MongoDB URI
-        mongodb_uri = os.getenv("MONGODB_URI") or os.getenv("MONGO_URI") or "mongodb://localhost:27017/aromi_db"
+        mongodb_uri = os.getenv("MONGO_URI")
+        if not mongodb_uri:
+            raise RuntimeError("Set MONGO_URI in the repository environment.")
         
         try:
             cls.client = AsyncIOMotorClient(mongodb_uri, serverSelectionTimeoutMS=5000)

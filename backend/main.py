@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import APIRouter, FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from contextlib import asynccontextmanager
 from models import ChatRequest, UserContext, ChatMessage, Recommendation, DoubtRequest, MealAnalysisRequest, PrescriptionAnalysisRequest
@@ -7,7 +7,12 @@ from db import Database, get_database
 from dotenv import load_dotenv
 import os
 
-load_dotenv(dotenv_path=os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env"))
+load_dotenv(
+    dotenv_path=os.path.join(
+        os.path.dirname(os.path.dirname(os.path.abspath(__file__))),
+        ".env",
+    )
+)
 
 # Lifespan events for database connection
 @asynccontextmanager
@@ -21,6 +26,7 @@ async def lifespan(app: FastAPI):
     Database.close_db()
 
 app = FastAPI(title="AroMi AI Agent API", lifespan=lifespan)
+api_router = APIRouter(prefix="/api")
 
 # Collections will be initialized after database connection
 users_collection = None
@@ -39,10 +45,11 @@ def get_collections():
     return users_collection, chat_history_collection, recommendations_collection, wellness_plans_collection
 
 # Setup CORS
-frontend_url = os.getenv("FRONTEND_URL", "http://localhost:5173")
+frontend_url = os.getenv("BASE_URL", "").strip()
+frontend_urls = [frontend_url] if frontend_url.startswith(("http://", "https://")) else []
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=[frontend_url],
+    allow_origins=frontend_urls,
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -54,7 +61,7 @@ agent = AroMiAgent()
 def read_root():
     return {"message": "Welcome to AroMi AI Health Coach API"}
 
-@app.get("/user/{user_id}")
+@api_router.get("/user/{user_id}")
 async def get_user(user_id: str):
     try:
         users_col, _, _, _ = get_collections()
@@ -66,7 +73,7 @@ async def get_user(user_id: str):
         if isinstance(e, HTTPException): raise e
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/login")
+@api_router.post("/login")
 async def login_endpoint(request: dict):
     try:
         email = request.get("email")
@@ -93,7 +100,7 @@ async def login_endpoint(request: dict):
         if isinstance(e, HTTPException): raise e
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/signup")
+@api_router.post("/signup")
 async def signup_endpoint(request: UserContext):
     try:
         users_col, _, _, _ = get_collections()
@@ -111,7 +118,7 @@ async def signup_endpoint(request: UserContext):
         if isinstance(e, HTTPException): raise e
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/user/update")
+@api_router.post("/user/update")
 async def update_user(request: UserContext):
     try:
         users_col, _, _, _ = get_collections()
@@ -124,7 +131,7 @@ async def update_user(request: UserContext):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/chat")
+@api_router.post("/chat")
 async def chat_endpoint(request: ChatRequest):
     try:
         users_col, chat_col, _, _ = get_collections()
@@ -154,31 +161,31 @@ async def chat_endpoint(request: ChatRequest):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-@app.post("/recommendation")
+@api_router.post("/recommendation")
 async def get_recommendation(context: UserContext):
     rec = agent.get_proactive_recommendation(context)
     return rec
 
-@app.post("/wellness-plan")
+@api_router.post("/wellness-plan")
 async def get_wellness_plan(context: UserContext):
     return agent.generate_wellness_plan(context)
 
-@app.post("/clarify-doubt")
+@api_router.post("/clarify-doubt")
 async def clarify_doubt_endpoint(request: DoubtRequest):
     answer = agent.clarify_doubt(request.question, request.context)
     return {"answer": answer}
 
-@app.post("/analyze-meal")
+@api_router.post("/analyze-meal")
 async def analyze_meal_endpoint(request: MealAnalysisRequest):
     insight = agent.analyze_meal(request.image_data, request.context)
     return {"insight": insight}
 
-@app.post("/analyze-prescription")
+@api_router.post("/analyze-prescription")
 async def analyze_prescription_endpoint(request: PrescriptionAnalysisRequest):
     analysis = agent.analyze_prescription(request.image_data, request.context)
     return {"analysis": analysis}
 
-@app.get("/store")
+@api_router.get("/store")
 def get_store_items():
     return [
         {"id": 0, "name": "AroMi Smart Yoga Mat", "price": "₹3,999", "image": "smart-mat.webp", "category": "Bio-Feedback Gear"},
@@ -191,6 +198,8 @@ def get_store_items():
         {"id": 5, "name": "Creatine Monohydrate", "price": "₹1,299", "image": "https://m.media-amazon.com/images/I/61r59uVlqML._SL1000_.jpg", "category": "Fitness Supplement"},
         {"id": 6, "name": "BCAA Energy Hub", "price": "₹1,499", "image": "https://m.media-amazon.com/images/I/71X8k-NqN8L._SL1500_.jpg", "category": "Fitness Supplement"}
     ]
+
+app.include_router(api_router)
 
 if __name__ == "__main__":
     import uvicorn

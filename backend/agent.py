@@ -5,19 +5,12 @@ from models import UserContext, Recommendation
 from pathlib import Path
 from dotenv import load_dotenv
 
-# Load environment variables from the same directory as this file
-env_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), ".env")
-load_dotenv(dotenv_path=env_path, override=True)
+env_path = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))), ".env")
+load_dotenv(dotenv_path=env_path)
 
 class AroMiAgent:
     def __init__(self):
-        # Force reload if not found
         self.api_key = os.getenv("GROQ_API_KEY")
-        
-        if not self.api_key:
-            # Try loading without path as fallback
-            load_dotenv()
-            self.api_key = os.getenv("GROQ_API_KEY")
 
         self.use_ai = False
         if self.api_key and (len(self.api_key) > 10):
